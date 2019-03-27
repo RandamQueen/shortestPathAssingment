@@ -1,17 +1,22 @@
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
 
 /*
  * A Contest to Meet (ACM) is a reality TV contest that sets three contestants at three random
  * city intersections. In order to win, the three contestants need all to meet at any intersection
  * of the city as fast as possible.
+ * 
  * It should be clear that the contestants may arrive at the intersections at different times, in
  * which case, the first to arrive can wait until the others arrive.
+ * 
  * From an estimated walking speed for each one of the three contestants, ACM wants to determine the
  * minimum time that a live TV broadcast should last to cover their journey regardless of the contestantsâ€™
  * initial positions and the intersection they finally meet. You are hired to help ACM answer this question.
  * You may assume the following:
+ * 
  *    ï‚· Each contestant walks at a given estimated speed.
  *    ï‚· The city is a collection of intersections in which some pairs are connected by one-way
  * streets that the contestants can use to traverse the city.
@@ -32,34 +37,42 @@ public class CompetitionDijkstra {
 	 *            A filename containing the details of the city road network
 	 * @param sA,
 	 *            sB, sC: speeds for 3 contestants
-	 * 
-	 *            CompetitionDijkstra (String filename, int sA, int sB, int sC) –
-	 *            constructor for this class should take the four parameters as
-	 *            specified in the input, and create and populate the most
-	 *            appropriate data structure in which to hold the city road network
-	 *            in this example.
-	 * 
+	 * @throws IOException
 	 * 
 	 */
-	CompetitionDijkstra(String filename, int sA, int sB, int sC) {
+	CompetitionDijkstra(String filename, int sA, int sB, int sC) throws IOException {
 		contestASpeed = sA;
 		contestBSpeed = sB;
 		contestCSpeed = sC;
-		
-		Scanner inputScanner = new Scanner(filename);
-		nodeNum = inputScanner.nextInt();
-		edgeNum = inputScanner.nextInt();
-		contestGrapgh = new EdgeWeightedDigrapgh(nodeNum,edgeNum);
-		
-		while (inputScanner.hasNext()) {
-			int startNode = inputScanner.nextInt();
-			int endNode = inputScanner.nextInt();
-			double weight = inputScanner.nextDouble();
+
+		File file = new File(filename);
+		FileReader fr = new FileReader(file);
+		BufferedReader br = new BufferedReader(fr);
+
+		String fileLine = br.readLine();
+		nodeNum = Integer.parseInt(fileLine);
+		fileLine = br.readLine();
+		edgeNum = Integer.parseInt(fileLine);
+
+		contestGrapgh = new EdgeWeightedDigrapgh(nodeNum, edgeNum);
+
+		fileLine = br.readLine();
+		while (fileLine != null) {
+			String startNodeText = fileLine.substring(0, 1);
+			String endNodeText = fileLine.substring(2, 3);
+			String weightText = fileLine.substring(4);
+
+			int startNode = Integer.parseInt(startNodeText);
+			int endNode = Integer.parseInt(endNodeText);
+			double weight = Double.parseDouble(weightText);
+
 			DirectedEdge newEdge = new DirectedEdge(startNode, endNode, weight);
 			contestGrapgh.addEdge(newEdge);
+			fileLine = br.readLine();
 		}
-		inputScanner.close();
+		br.close();
 	}
+	
 
 	/**
 	 * @return int: minimum minutes that will pass before the three contestants can
@@ -71,7 +84,28 @@ public class CompetitionDijkstra {
 		return -1;
 	}
 
-	
+	public String toString() {
+		String returnString = "";
+
+		for (int index = 0; index < nodeNum; index++) 
+		{
+			Bag<DirectedEdge> currentBag = contestGrapgh.adj[index]; 
+			int bagIndex = 0; 
+			DirectedEdge currentEdge = currentBag.get(bagIndex); 
+			while( currentEdge != null) { 
+				String currentString ="";  
+				currentString = currentEdge.from() +" ->" + currentEdge.to() +
+						" " + currentEdge.weight +"\n"; 
+				returnString += currentString; 
+				bagIndex++; 
+				currentEdge = currentBag.get(bagIndex); 
+			}
+		}
+		return returnString;
+	}
+
+
+	// Based on the files of similar name provided in the textbook 
 	private static class EdgeWeightedDigrapgh {
 		int nodeNum;
 		int edgeNum;
@@ -80,32 +114,30 @@ public class CompetitionDijkstra {
 
 		EdgeWeightedDigrapgh(int nodeNum, int edgeNum) {
 			this.nodeNum = nodeNum;
-			this.edgeNum =edgeNum; 
+			this.edgeNum = edgeNum;
 			this.indegree = new int[nodeNum];
-			 adj = (Bag<DirectedEdge>[]) new Bag[nodeNum];
-			 for (int index = 0; index < nodeNum; index++)
-			 {
-				 adj[index] = new Bag<DirectedEdge>(); 
-			 }         
+			adj = (Bag<DirectedEdge>[]) new Bag[nodeNum];
+			for (int index = 0; index < nodeNum; index++) {
+				adj[index] = new Bag<DirectedEdge>();
+			}
 		}
 
-		void addEdge(DirectedEdge newEdge) 
-		{
+		void addEdge(DirectedEdge newEdge) {
 			int from = newEdge.from();
-	        int to = newEdge.to();
-	        adj[from].add(newEdge);
-	        indegree[to]++;
+			int to = newEdge.to();
+			adj[from].add(newEdge);
+			indegree[to]++;
 		}
 
 	}
 
-	private static class Node<Item> {
-		private Item currentNode;
-		private Node<Item> nextNode;
+	private static class Node<DirectedEdge> {
+		private DirectedEdge currentNode;
+		private Node<DirectedEdge> nextNode;
 	}
 
-	public static class Bag<Item> implements Iterable<Item> {
-		private Node<Item> startNode; // beginning of bag
+	public static class Bag<DirectedEdge>  {
+		private Node<DirectedEdge> startNode; // beginning of bag
 		private int size; // number of elements in bag
 
 		public Bag() {
@@ -121,43 +153,30 @@ public class CompetitionDijkstra {
 			return size;
 		}
 
-		public void add(Item item) {
-			Node<Item> oldfirst = startNode;
-			startNode = new Node<Item>();
+		public void add(DirectedEdge item) {
+			Node<DirectedEdge> oldfirst = startNode;
+			startNode = new Node<DirectedEdge>();
 			startNode.currentNode = item;
 			startNode.nextNode = oldfirst;
 			size++;
 		}
-
-		public Iterator<Item> iterator() {
-			return new ListIterator(startNode);
-		}
-	
-		private class ListIterator implements Iterator<Item> {
-			private Node<Item> current;
-
-			public ListIterator(Node<Item> startNode) {
-				current = startNode;
+		
+		public DirectedEdge get(int index) 
+		{ 
+			int counter = 0; 
+			DirectedEdge returnItem = null; 
+			if ( index >= size )
+			{ 
+				return returnItem;  
 			}
-
-			public boolean hasNext() {
-				if( current != null) { 
-					return true; 
-				}
-				return false; 
+			Node<DirectedEdge> currentItem = startNode; 
+			while( counter != index) 
+			{ 
+				currentItem = currentItem.nextNode; 
+				counter++;  
 			}
-
-			public Item next() {
-				if (hasNext()) {
-					Item item = current.currentNode;
-					current = current.nextNode;
-					return item;
-				} 
-				else 
-				{
-					return null;
-				}
-			}
+			returnItem = currentItem.currentNode; 		
+			return returnItem; 
 		}
 	}
 
