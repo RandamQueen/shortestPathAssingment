@@ -3,7 +3,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-
 /*
  * A Contest to Meet (ACM) is a reality TV contest that sets three contestants at three random
  * city intersections. In order to win, the three contestants need all to meet at any intersection
@@ -31,12 +30,14 @@ public class CompetitionDijkstra {
 	int nodeNum;
 	int edgeNum;
 	EdgeWeightedDigrapgh contestGrapgh;
+	double[] distTo = new double[nodeNum];
+	DirectedEdge[] edgeTo = new DirectedEdge[nodeNum];
 
 	/**
-	 * @param filename:
-	 *            A filename containing the details of the city road network
+	 * @param filename:A
+	 *            filename containing the details of the city road network
 	 * @param sA,
-	 *            sB, sC: speeds for 3 contestants
+	 *            sB, sC: speeds for 3 people
 	 * @throws IOException
 	 * 
 	 */
@@ -72,50 +73,84 @@ public class CompetitionDijkstra {
 		}
 		br.close();
 	}
-	
 
 	/**
 	 * @return int: minimum minutes that will pass before the three contestants can
 	 *         meet
 	 */
 	public int timeRequiredforCompetition() {
+		int timeRequired = -1;
+		if (contestASpeed < 50 || contestASpeed > 100 || contestBSpeed < 50 || contestBSpeed > 100
+				|| contestCSpeed > 100 || contestCSpeed < 50) {
+			return timeRequired;
+		}
+		double[] locationDistance = new double[nodeNum];
+		for (int i = 0; i < nodeNum; i++) {
+			Dijkstra(i);
+		}
+		return timeRequired;
+	}
 
-		// TO DO
-		return -1;
+	public void Dijkstra( int sourceNodeIndex) {
+		for( int temp = 0; temp <nodeNum; temp++ )
+		{ 
+			distTo[temp] = -1; 
+			edgeTo[temp] = null; 
+		}
+		distTo[sourceNodeIndex] = 0; 
+		
+
+	}
+
+	public void relax(DirectedEdge testEdge) { 
+	int v = testEdge.from(); 
+	int w = testEdge.to(); 
+		if( distTo[w] > distTo[v] + testEdge.weight )
+		{ 
+			distTo[w] = distTo[v] + testEdge.weight;
+			edgeTo[w] = testEdge;
+		}
+	}
+	
+	public void relax(EdgeWeightedDigrapgh graph, int source ) { 
+		for( int i =0; i <
+		{ 
+			int w = testEdge.to(); 
+			if( distTo[w] > distTo[source] + testEdge.weight )
+			{ 
+				distTo[w] = distTo[source] + testEdge.weight;
+				edgeTo[w] = testEdge;
+			}
+		} 
 	}
 
 	public String toString() {
 		String returnString = "";
 
-		for (int index = 0; index < nodeNum; index++) 
-		{
-			Bag<DirectedEdge> currentBag = contestGrapgh.adj[index]; 
-			int bagIndex = 0; 
-			DirectedEdge currentEdge = currentBag.get(bagIndex); 
-			while( currentEdge != null) { 
-				String currentString ="";  
-				currentString = currentEdge.from() +" ->" + currentEdge.to() +
-						" " + currentEdge.weight +"\n"; 
-				returnString += currentString; 
-				bagIndex++; 
-				currentEdge = currentBag.get(bagIndex); 
+		for (int index = 0; index < nodeNum; index++) {
+			Bag<DirectedEdge> currentBag = contestGrapgh.adj[index];
+			int bagIndex = 0;
+			DirectedEdge currentEdge = currentBag.get(bagIndex);
+			while (currentEdge != null) {
+				String currentString = "";
+				currentString = currentEdge.from() + " ->" + currentEdge.to() + " " + currentEdge.weight + "\n";
+				returnString += currentString;
+				bagIndex++;
+				currentEdge = currentBag.get(bagIndex);
 			}
 		}
 		return returnString;
 	}
 
-
-	// Based on the files of similar name provided in the textbook 
+	// Based on the files of similar name provided in the textbook
 	private static class EdgeWeightedDigrapgh {
 		int nodeNum;
 		int edgeNum;
-		private Bag<DirectedEdge>[] adj;
-		private int[] indegree;
+		Bag<DirectedEdge>[] adj;
 
 		EdgeWeightedDigrapgh(int nodeNum, int edgeNum) {
 			this.nodeNum = nodeNum;
 			this.edgeNum = edgeNum;
-			this.indegree = new int[nodeNum];
 			adj = (Bag<DirectedEdge>[]) new Bag[nodeNum];
 			for (int index = 0; index < nodeNum; index++) {
 				adj[index] = new Bag<DirectedEdge>();
@@ -126,17 +161,10 @@ public class CompetitionDijkstra {
 			int from = newEdge.from();
 			int to = newEdge.to();
 			adj[from].add(newEdge);
-			indegree[to]++;
 		}
-
 	}
 
-	private static class Node<DirectedEdge> {
-		private DirectedEdge currentNode;
-		private Node<DirectedEdge> nextNode;
-	}
-
-	public static class Bag<DirectedEdge>  {
+	public static class Bag<DirectedEdge> {
 		private Node<DirectedEdge> startNode; // beginning of bag
 		private int size; // number of elements in bag
 
@@ -153,31 +181,33 @@ public class CompetitionDijkstra {
 			return size;
 		}
 
-		public void add(DirectedEdge item) {
+		public void add(DirectedEdge newNode) {
 			Node<DirectedEdge> oldfirst = startNode;
 			startNode = new Node<DirectedEdge>();
-			startNode.currentNode = item;
+			startNode.currentNode = newNode;
 			startNode.nextNode = oldfirst;
 			size++;
 		}
-		
-		public DirectedEdge get(int index) 
-		{ 
-			int counter = 0; 
-			DirectedEdge returnItem = null; 
-			if ( index >= size )
-			{ 
-				return returnItem;  
+	
+		public DirectedEdge get(int index) {
+			int counter = 0;
+			DirectedEdge returnItem = null;
+			if (index >= size) {
+				return returnItem;
 			}
-			Node<DirectedEdge> currentItem = startNode; 
-			while( counter != index) 
-			{ 
-				currentItem = currentItem.nextNode; 
-				counter++;  
+			Node<DirectedEdge> currentItem = startNode;
+			while (counter != index) {
+				currentItem = currentItem.nextNode;
+				counter++;
 			}
-			returnItem = currentItem.currentNode; 		
-			return returnItem; 
+			returnItem = currentItem.currentNode;
+			return returnItem;
 		}
+	}
+
+	private static class Node<DirectedEdge> {
+		private DirectedEdge currentNode;
+		private Node<DirectedEdge> nextNode;
 	}
 
 	private static class DirectedEdge {
@@ -198,6 +228,9 @@ public class CompetitionDijkstra {
 		public int from() {
 			return startNode;
 		}
-	}
 
+		public double getWeight() {
+			return weight;
+		}
+	}
 }
