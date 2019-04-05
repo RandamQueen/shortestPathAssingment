@@ -1,7 +1,9 @@
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 /*
@@ -44,12 +46,15 @@ public class CompetitionDijkstra {
 		contestASpeed = sA;
 		contestBSpeed = sB;
 		contestCSpeed = sC;
+		processTextFile(filename);
+	}
 
+	public void processTextFile(String filename) throws IOException {
 		File file = new File(filename);
 		FileReader fr = new FileReader(file);
 		BufferedReader br = new BufferedReader(fr);
-
 		String fileLine = br.readLine();
+
 		nodeNum = Integer.parseInt(fileLine);
 		fileLine = br.readLine();
 		edgeNum = Integer.parseInt(fileLine);
@@ -58,33 +63,31 @@ public class CompetitionDijkstra {
 
 		fileLine = br.readLine();
 		while (fileLine != null) {
-			if( nodeNum > 100) {
-			if(fileLine.charAt(5) ==' ' ) // this means the second num is single digit 
-			{ 
-				String tempString = fileLine.substring(6);
-				fileLine =  fileLine.substring(0,4);
-				fileLine += tempString; 
+			if (nodeNum > 100) {
+				if (fileLine.charAt(5) == ' ') // this means the second num is single digit
+				{
+					String tempString = fileLine.substring(6);
+					fileLine = fileLine.substring(0, 4);
+					fileLine += tempString;
+				} else if (fileLine.charAt(4) == ' ') // this means the first num is double digit
+				{
+					String tempString = fileLine.substring(5);
+					fileLine = fileLine.substring(0, 4);
+					fileLine += tempString;
+				}
+				if (fileLine.charAt(1) == ' ') // this means the first num is single digit
+				{
+					fileLine = fileLine.substring(2);
+				} else if (fileLine.charAt(0) == ' ') // this means the first num is double digit
+				{
+					fileLine = fileLine.substring(1);
+				}
 			}
-			else if(fileLine.charAt(4) ==' ' ) // this means the first num is double digit 
-			{ 
-				String tempString = fileLine.substring(5);
-				fileLine =  fileLine.substring(0,4);
-				fileLine += tempString; 
-			}
-			if(fileLine.charAt(1) ==' ' ) // this means the first num is single digit 
-			{ 
-				fileLine =  fileLine.substring(2);
-			}
-			else if(fileLine.charAt(0) ==' ' ) // this means the first num is double digit 
-			{ 
-				fileLine =  fileLine.substring(1);
-			}
-		}
-			
+
 			String[] strArray = fileLine.split(" ");
 			String startNodeText = strArray[0];
-			String endNodeText =  strArray[1];
-			String weightText =  strArray[2];
+			String endNodeText = strArray[1];
+			String weightText = strArray[2];
 
 			int startNode = Integer.parseInt(startNodeText);
 			int endNode = Integer.parseInt(endNodeText);
@@ -110,113 +113,130 @@ public class CompetitionDijkstra {
 		double[][] distBetweenNodeList = new double[nodeNum][nodeNum];
 		for (int x = 0; x < nodeNum; x++) {
 			for (int y = 0; y < nodeNum; y++) {
-				distBetweenNodeList[x][y] = -1; 
+				distBetweenNodeList[x][y] = -1;
 			}
 		}
-		//for (int i = 0; i < nodeNum; i++) {
-			double[] sourceDistList= Dijkstra(contestGrapgh, 0);
-			
-			//for( int temp = 0; temp < nodeNum; temp++ )
-		//	{ 
-			//	double distFromSource = sourceDistList[temp];
-			///	distBetweenNodeList[i][temp] = distFromSource;
-		//	}
-		//}
-			System.out.println("Thing finsihed");
+		// for (int i = 0; i < nodeNum; i++) {
+		double[] sourceDistList = Dijkstra(contestGrapgh, 0);
+
+		// for( int temp = 0; temp < nodeNum; temp++ )
+		// {
+		// double distFromSource = sourceDistList[temp];
+		/// distBetweenNodeList[i][temp] = distFromSource;
+		// }
+		// }
+		System.out.println("Thing finsihed");
 		return timeRequired;
 	}
 
-	public double[] Dijkstra(EdgeWeightedDigrapgh contestGrapgh,  int sourceNodeIndex) {
-		ArrayList< String> testOrder = new ArrayList< String>(); 
-		boolean[] marked  = new boolean[nodeNum];
+	public double[] Dijkstra(EdgeWeightedDigrapgh contestGrapgh, int sourceNodeIndex) {
+		ArrayList<String> testOrder = new ArrayList<String>();
+		boolean[] marked = new boolean[nodeNum];
 		double[] distTo = new double[nodeNum];
 		DirectedEdge[] edgeTo = new DirectedEdge[nodeNum];
 		int currentTestNode = sourceNodeIndex;
-		testOrder.add(Integer.toString(currentTestNode)); 
-		for( int temp = 0; temp <nodeNum; temp++ )
-		{ 
-			distTo[temp] = -1; 
-			edgeTo[temp] = null; 
-			marked[temp] = false; 
+		testOrder.add(Integer.toString(currentTestNode));
+		for (int temp = 0; temp < nodeNum; temp++) {
+			distTo[temp] = -1;
+			edgeTo[temp] = null;
+			marked[temp] = false;
 		}
-		distTo[sourceNodeIndex] = 0; 
-		
-		while(testOrder.size() >0) {
-			currentTestNode = Integer.parseInt(testOrder.get(0)); 
-			if(!marked[currentTestNode] )
-			{
-				Bag sourceEdge =  contestGrapgh.adj[currentTestNode];  
-				ArrayList< String> templist = getChildValues(sourceEdge); 
-				for (int temp =0; temp < templist.size(); temp++)
-				{ 
-					testOrder.add(templist.get(temp)); 
+		distTo[sourceNodeIndex] = 0;
+
+		while (testOrder.size() > 0) {
+			currentTestNode = Integer.parseInt(testOrder.get(0));
+			if (!marked[currentTestNode]) {
+				Bag sourceEdge = contestGrapgh.adj[currentTestNode];
+				
+				ArrayList<String> templist = getChildValues(sourceEdge);
+				
+				for (int temp = 0; temp < templist.size(); temp++) {
+					testOrder.add(templist.get(temp));
 				}
-				relax( contestGrapgh, currentTestNode, distTo, edgeTo); 
-				marked[currentTestNode] = true; 
+				
+				for( int index = 0;index < sourceEdge.size(); index++)
+				{ 
+					DirectedEdge testEdge = sourceEdge.get(index); 
+					int w = testEdge.to(); 
+					double currentWeight = distTo[w]; 
+					double newWeight = distTo[currentTestNode] + testEdge.weight ; 
+					
+					if ( currentWeight == -1) 
+					{ 
+						distTo[w] = newWeight; 
+						edgeTo[w] = testEdge;
+					}
+					else if(currentWeight > newWeight  )	
+					{ 
+						distTo[w] = newWeight; 
+						edgeTo[w] = testEdge;
+					}
+				}
+				marked[currentTestNode] = true;
 			}
-			testOrder.remove(0); 
+			testOrder.remove(0);
 		}
-		return distTo; 
+		return distTo;
 	}
 
-
-	public ArrayList< String> getChildValues( Bag sourceEdge) { 
-		ArrayList< String> returnStrings = 	new ArrayList< String>();
-		for( int index =0; index< sourceEdge.size(); index++ )
-		{ 
-			 DirectedEdge currentNode = sourceEdge.get(index); 
-			 String childVetrice = Integer.toString(currentNode.to());
-			 returnStrings.add(childVetrice); 
+	public ArrayList<String> getChildValues(Bag sourceEdge) {
+		ArrayList<String> returnStrings = new ArrayList<String>();
+		for (int index = 0; index < sourceEdge.size(); index++) {
+			DirectedEdge currentNode = sourceEdge.get(index);
+			String childVetrice = Integer.toString(currentNode.to());
+			returnStrings.add(childVetrice);
 		}
 		return returnStrings;
 	}
-	public void relax(DirectedEdge testEdge,double[] distTo, DirectedEdge[] edgeTo ) { 
-	int v = testEdge.from(); 
-	int w = testEdge.to(); 
-		if( distTo[w] > distTo[v] + testEdge.weight )
-		{ 
+ 
+	/*
+public void relax(DirectedEdge testEdge, double[] distTo, DirectedEdge[] edgeTo) {
+		int v = testEdge.from();
+		int w = testEdge.to();
+		if (distTo[w] > distTo[v] + testEdge.weight) {
 			distTo[w] = distTo[v] + testEdge.weight;
 			edgeTo[w] = testEdge;
 		}
 	}
-	
-	public void relax(EdgeWeightedDigrapgh graph, int source,double[] distTo, DirectedEdge[] edgeTo ) { 
-		Bag sourceEdge =  graph.adj[source];  
-		for( int i =0; i <sourceEdge.size(); i++) 
-		{ 
-			DirectedEdge testEdge = sourceEdge.get(i); 
-			int w = testEdge.to(); 
-			if( distTo[w] > distTo[source] + testEdge.weight )
-			{ 
+
+	public void relax(EdgeWeightedDigrapgh graph, int source, double[] distTo, DirectedEdge[] edgeTo) {
+		Bag sourceEdge = graph.adj[source];
+		for (int i = 0; i < sourceEdge.size(); i++) {
+			DirectedEdge testEdge = sourceEdge.get(i);
+			int w = testEdge.to();
+			if (distTo[w] > distTo[source] + testEdge.weight) {
 				distTo[w] = distTo[source] + testEdge.weight;
 				edgeTo[w] = testEdge;
 			}
-		} 
+		}
 	}
+	*/ 
 
 	public String toStringDistTo(double[] distTo) {
-		String returnString = "";	
+		DecimalFormat numberFormat = new DecimalFormat("#.########");
+		String returnString = "";
 		for (int index = 0; index < nodeNum; index++) {
-				String currentString = "";
-				currentString += "vertexNum: " + index + " Value: " +distTo[index] +"\n";  
-				returnString += currentString;
+			String currentString = "";
+			currentString += "vertexNum: " + index + " Value: " + 
+					numberFormat.format(distTo[index])+ "\n";
+			returnString += currentString;
 		}
 		return returnString;
 	}
-	
+
 	public String toStringGraph() {
-		String returnString = "";	
+		String returnString = "";
 		for (int index = 0; index < nodeNum; index++) {
 			Bag currentBag = contestGrapgh.adj[index];
 			int bagIndex = 0;
 			DirectedEdge currentEdge = currentBag.get(bagIndex);
-			while (currentEdge != null) {	
+			while (currentEdge != null) {
 				String currentString = "";
 				currentString = currentEdge.from() + " ->" + currentEdge.to() + " " + currentEdge.weight + "\n";
 				returnString += currentString;
 				bagIndex++;
 				currentEdge = currentBag.get(bagIndex);
-				
+
 			}
 		}
 		return returnString;
@@ -231,7 +251,7 @@ public class CompetitionDijkstra {
 		EdgeWeightedDigrapgh(int nodeNum, int edgeNum) {
 			this.nodeNum = nodeNum;
 			this.edgeNum = edgeNum;
-			adj =  new Bag[nodeNum];
+			adj = new Bag[nodeNum];
 			for (int index = 0; index < nodeNum; index++) {
 				adj[index] = new Bag();
 			}
@@ -261,54 +281,47 @@ public class CompetitionDijkstra {
 			return size;
 		}
 
-		public void add(DirectedEdge newEdge) { // sort the Bag with ascending weights 
-			if( size ==0 )
-			{ 
-				startNode = new edgeNode(newEdge,null ); 
+		public void add(DirectedEdge newEdge) { // sort the Bag with ascending weights
+			if (size == 0) {
+				startNode = new edgeNode(newEdge, null);
 				size++;
-				return; 
+				return;
 			}
 			DirectedEdge firstEdge = startNode.currentNode;
-			boolean nodeAdded = false; 
-			if( firstEdge.getWeight() > newEdge.getWeight()) {  // newNode has the lowest weighting 
+			boolean nodeAdded = false;
+			if (firstEdge.getWeight() > newEdge.getWeight()) { // newNode has the lowest weighting
 				edgeNode oldfirst = startNode;
-				startNode = new edgeNode(newEdge,oldfirst );
-			}
-			else 
-			{
-				edgeNode previoudNode = startNode; 
-				edgeNode nextNode =startNode.getNextNode(); 
-				while( nextNode != null && !nodeAdded)
-				{ 
-					DirectedEdge nextEdge = nextNode.getCurrentNode(); 
-					if( nextEdge.getWeight() > newEdge.getWeight()) { // newNode weight is less  
-						edgeNode newNode =new edgeNode (newEdge,nextNode ); 
-						previoudNode.nextNode = newNode; 
-						nodeAdded = true; 
-					}
-					else 
-					{ 
-						previoudNode = nextNode; 
-						nextNode = nextNode.getNextNode(); 
+				startNode = new edgeNode(newEdge, oldfirst);
+			} else {
+				edgeNode previoudNode = startNode;
+				edgeNode nextNode = startNode.getNextNode();
+				while (nextNode != null && !nodeAdded) {
+					DirectedEdge nextEdge = nextNode.getCurrentNode();
+					if (nextEdge.getWeight() > newEdge.getWeight()) { // newNode weight is less
+						edgeNode newNode = new edgeNode(newEdge, nextNode);
+						previoudNode.nextNode = newNode;
+						nodeAdded = true;
+					} else {
+						previoudNode = nextNode;
+						nextNode = nextNode.getNextNode();
 					}
 				}
-				if( nextNode == null) 
-				{ 
-					edgeNode newNode = new edgeNode (newEdge,nextNode ); 
-					previoudNode.nextNode = newNode; 
+				if (nextNode == null) {
+					edgeNode newNode = new edgeNode(newEdge, nextNode);
+					previoudNode.nextNode = newNode;
 				}
 			}
 			size++;
 			return;
 		}
-		
+
 		public DirectedEdge get(int index) {
 			int counter = 0;
 			DirectedEdge returnItem = null;
 			if (index >= size) {
 				return returnItem;
 			}
-			
+
 			edgeNode currentItem = startNode;
 			while (counter != index) {
 				currentItem = currentItem.nextNode;
@@ -316,20 +329,19 @@ public class CompetitionDijkstra {
 			}
 			returnItem = currentItem.currentNode;
 			return returnItem;
-		}	
+		}
 	}
 
-	public static class edgeNode{
+	public static class edgeNode {
 
 		public DirectedEdge currentNode;
 		public edgeNode nextNode;
-		
-		edgeNode( DirectedEdge currentNode, edgeNode nextNode) 
-		{ 
-			this.currentNode = currentNode; 
-			this.nextNode= nextNode; 
+
+		edgeNode(DirectedEdge currentNode, edgeNode nextNode) {
+			this.currentNode = currentNode;
+			this.nextNode = nextNode;
 		}
-		
+
 		public DirectedEdge getCurrentNode() {
 			return currentNode;
 		}
@@ -337,7 +349,7 @@ public class CompetitionDijkstra {
 		public edgeNode getNextNode() {
 			return nextNode;
 		}
-		
+
 	}
 
 	public class DirectedEdge {
@@ -363,15 +375,13 @@ public class CompetitionDijkstra {
 			return weight;
 		}
 	}
-	
-	public static void main(String[] args) throws IOException
-	{ 
-		String filename = "tinyEWD.txt"; 
-		int contestantSpeed = 75; 
-		CompetitionDijkstra dijkstra = new CompetitionDijkstra(filename,contestantSpeed,contestantSpeed,contestantSpeed); 
-		System.out.print( "Graph input\n"+ dijkstra.toStringGraph());
-		double[] test = dijkstra.Dijkstra(dijkstra.contestGrapgh,0); 
-		System.out.print( "Short path\n"+ dijkstra.toStringDistTo(test));
+
+	public static void main(String[] args) throws IOException {
+		String filename = "tinyEWD.txt";
+		int contestantSpeed = 75;
+		CompetitionDijkstra dijkstra = new CompetitionDijkstra(filename, contestantSpeed, contestantSpeed, contestantSpeed);
+		System.out.println("Graph input\n" + dijkstra.toStringGraph());
+		double[] test = dijkstra.Dijkstra(dijkstra.contestGrapgh, 0);
+		System.out.println("Shortest path:\n" + dijkstra.toStringDistTo(test));
 	}
 }
-
