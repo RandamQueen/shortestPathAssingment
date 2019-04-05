@@ -86,12 +86,12 @@ public class CompetitionDijkstra {
 		}
 		double[] locationDistance = new double[nodeNum];
 		for (int i = 0; i < nodeNum; i++) {
-			Dijkstra(i);
+			Dijkstra(contestGrapgh, i);
 		}
 		return timeRequired;
 	}
 
-	public void Dijkstra( int sourceNodeIndex) {
+	public void Dijkstra(EdgeWeightedDigrapgh contestGrapgh,  int sourceNodeIndex) {
 		for( int temp = 0; temp <nodeNum; temp++ )
 		{ 
 			distTo[temp] = -1; 
@@ -113,8 +113,10 @@ public class CompetitionDijkstra {
 	}
 	
 	public void relax(EdgeWeightedDigrapgh graph, int source ) { 
-		for( int i =0; i <
+		Bag sourceEdge =  graph.adj[source];  
+		for( int i =0; i <sourceEdge.size(); i++) 
 		{ 
+			DirectedEdge testEdge = sourceEdge.get(i); 
 			int w = testEdge.to(); 
 			if( distTo[w] > distTo[source] + testEdge.weight )
 			{ 
@@ -128,7 +130,7 @@ public class CompetitionDijkstra {
 		String returnString = "";
 
 		for (int index = 0; index < nodeNum; index++) {
-			Bag<DirectedEdge> currentBag = contestGrapgh.adj[index];
+			Bag currentBag = contestGrapgh.adj[index];
 			int bagIndex = 0;
 			DirectedEdge currentEdge = currentBag.get(bagIndex);
 			while (currentEdge != null) {
@@ -146,14 +148,14 @@ public class CompetitionDijkstra {
 	private static class EdgeWeightedDigrapgh {
 		int nodeNum;
 		int edgeNum;
-		Bag<DirectedEdge>[] adj;
+		Bag[] adj;
 
 		EdgeWeightedDigrapgh(int nodeNum, int edgeNum) {
 			this.nodeNum = nodeNum;
 			this.edgeNum = edgeNum;
-			adj = (Bag<DirectedEdge>[]) new Bag[nodeNum];
+			adj =  new Bag[nodeNum];
 			for (int index = 0; index < nodeNum; index++) {
-				adj[index] = new Bag<DirectedEdge>();
+				adj[index] = new Bag();
 			}
 		}
 
@@ -164,8 +166,8 @@ public class CompetitionDijkstra {
 		}
 	}
 
-	public static class Bag<DirectedEdge> {
-		private Node<DirectedEdge> startNode; // beginning of bag
+	public static class Bag {
+		private edgeNode startNode; // beginning of bag
 		private int size; // number of elements in bag
 
 		public Bag() {
@@ -181,36 +183,83 @@ public class CompetitionDijkstra {
 			return size;
 		}
 
-		public void add(DirectedEdge newNode) {
-			Node<DirectedEdge> oldfirst = startNode;
-			startNode = new Node<DirectedEdge>();
-			startNode.currentNode = newNode;
-			startNode.nextNode = oldfirst;
+		public void add(DirectedEdge newEdge) { // sort the Bag with ascending weights 
+			if( size ==0 )
+			{ 
+				startNode = new edgeNode(newEdge,null ); 
+			}
+			DirectedEdge firstEdge = startNode.currentNode;
+			boolean nodeAdded = false; 
+			if( firstEdge.getWeight() > newEdge.getWeight()) {  // newNode has the lowest weighting 
+				edgeNode oldfirst = startNode;
+				startNode = new edgeNode(newEdge,oldfirst );
+			}
+			else 
+			{
+				edgeNode previoudNode = startNode; 
+				edgeNode nextNode =startNode.getNextNode(); 
+				while( nextNode != null && !nodeAdded)
+				{ 
+					DirectedEdge nextEdge = nextNode.getCurrentNode(); 
+					if( nextEdge.getWeight() > newEdge.getWeight()) { // newNode weight is less  
+						edgeNode newNode =new edgeNode (newEdge,nextNode ); 
+						previoudNode.nextNode = newNode; 
+						nodeAdded = true; 
+					}
+					else 
+					{ 
+						previoudNode = nextNode; 
+						nextNode = nextNode.getNextNode(); 
+					}
+				}
+				if( nextNode == null) 
+				{ 
+					edgeNode newNode = new edgeNode (newEdge,nextNode ); 
+					previoudNode.nextNode = newNode; 
+				}
+			}
 			size++;
 		}
-	
+		
 		public DirectedEdge get(int index) {
 			int counter = 0;
 			DirectedEdge returnItem = null;
 			if (index >= size) {
 				return returnItem;
 			}
-			Node<DirectedEdge> currentItem = startNode;
+			
+			edgeNode currentItem = startNode;
 			while (counter != index) {
 				currentItem = currentItem.nextNode;
 				counter++;
 			}
 			returnItem = currentItem.currentNode;
 			return returnItem;
+		}	
+	}
+
+	public static class edgeNode{
+
+		public DirectedEdge currentNode;
+		public edgeNode nextNode;
+		
+		edgeNode( DirectedEdge currentNode, edgeNode nextNode) 
+		{ 
+			this.currentNode = currentNode; 
+			this.nextNode= nextNode; 
 		}
+		
+		public DirectedEdge getCurrentNode() {
+			return currentNode;
+		}
+
+		public edgeNode getNextNode() {
+			return nextNode;
+		}
+		
 	}
 
-	private static class Node<DirectedEdge> {
-		private DirectedEdge currentNode;
-		private Node<DirectedEdge> nextNode;
-	}
-
-	private static class DirectedEdge {
+	public class DirectedEdge {
 		int startNode;
 		int endNode;
 		double weight;
