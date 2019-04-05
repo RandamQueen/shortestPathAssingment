@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /*
  * A Contest to Meet (ACM) is a reality TV contest that sets three contestants at three random
@@ -30,8 +31,6 @@ public class CompetitionDijkstra {
 	int nodeNum;
 	int edgeNum;
 	EdgeWeightedDigrapgh contestGrapgh;
-	double[] distTo = new double[nodeNum];
-	DirectedEdge[] edgeTo = new DirectedEdge[nodeNum];
 
 	/**
 	 * @param filename:A
@@ -108,23 +107,70 @@ public class CompetitionDijkstra {
 				|| contestCSpeed > 100 || contestCSpeed < 50) {
 			return timeRequired;
 		}
-		double[] locationDistance = new double[nodeNum];
-		for (int i = 0; i < nodeNum; i++) {
-			Dijkstra(contestGrapgh, i);
+		double[][] distBetweenNodeList = new double[nodeNum][nodeNum];
+		for (int x = 0; x < nodeNum; x++) {
+			for (int y = 0; y < nodeNum; y++) {
+				distBetweenNodeList[x][y] = -1; 
+			}
 		}
+		//for (int i = 0; i < nodeNum; i++) {
+			double[] sourceDistList= Dijkstra(contestGrapgh, 0);
+			
+			//for( int temp = 0; temp < nodeNum; temp++ )
+		//	{ 
+			//	double distFromSource = sourceDistList[temp];
+			///	distBetweenNodeList[i][temp] = distFromSource;
+		//	}
+		//}
+			System.out.println("Thing finsihed");
 		return timeRequired;
 	}
 
-	public void Dijkstra(EdgeWeightedDigrapgh contestGrapgh,  int sourceNodeIndex) {
+	public double[] Dijkstra(EdgeWeightedDigrapgh contestGrapgh,  int sourceNodeIndex) {
+		ArrayList< String> testOrder = new ArrayList< String>(); 
+		boolean[] marked  = new boolean[nodeNum];
+		double[] distTo = new double[nodeNum];
+		DirectedEdge[] edgeTo = new DirectedEdge[nodeNum];
+		int currentTestNode = sourceNodeIndex;
+		testOrder.add(Integer.toString(currentTestNode)); 
 		for( int temp = 0; temp <nodeNum; temp++ )
 		{ 
 			distTo[temp] = -1; 
 			edgeTo[temp] = null; 
+			marked[temp] = false; 
 		}
 		distTo[sourceNodeIndex] = 0; 
+		
+		while(testOrder.size() >0) {
+			currentTestNode = Integer.parseInt(testOrder.get(0)); 
+			if(!marked[currentTestNode] )
+			{
+				Bag sourceEdge =  contestGrapgh.adj[currentTestNode];  
+				ArrayList< String> templist = getChildValues(sourceEdge); 
+				for (int temp =0; temp < templist.size(); temp++)
+				{ 
+					testOrder.add(templist.get(temp)); 
+				}
+				relax( contestGrapgh, currentTestNode, distTo, edgeTo); 
+				marked[currentTestNode] = true; 
+			}
+			testOrder.remove(0); 
+		}
+		return distTo; 
 	}
 
-	public void relax(DirectedEdge testEdge) { 
+
+	public ArrayList< String> getChildValues( Bag sourceEdge) { 
+		ArrayList< String> returnStrings = 	new ArrayList< String>();
+		for( int index =0; index< sourceEdge.size(); index++ )
+		{ 
+			 DirectedEdge currentNode = sourceEdge.get(index); 
+			 String childVetrice = Integer.toString(currentNode.to());
+			 returnStrings.add(childVetrice); 
+		}
+		return returnStrings;
+	}
+	public void relax(DirectedEdge testEdge,double[] distTo, DirectedEdge[] edgeTo ) { 
 	int v = testEdge.from(); 
 	int w = testEdge.to(); 
 		if( distTo[w] > distTo[v] + testEdge.weight )
@@ -134,7 +180,7 @@ public class CompetitionDijkstra {
 		}
 	}
 	
-	public void relax(EdgeWeightedDigrapgh graph, int source ) { 
+	public void relax(EdgeWeightedDigrapgh graph, int source,double[] distTo, DirectedEdge[] edgeTo ) { 
 		Bag sourceEdge =  graph.adj[source];  
 		for( int i =0; i <sourceEdge.size(); i++) 
 		{ 
@@ -148,7 +194,17 @@ public class CompetitionDijkstra {
 		} 
 	}
 
-	public String toString() {
+	public String toStringDistTo(double[] distTo) {
+		String returnString = "";	
+		for (int index = 0; index < nodeNum; index++) {
+				String currentString = "";
+				currentString += "vertexNum: " + index + " Value: " +distTo[index] +"\n";  
+				returnString += currentString;
+		}
+		return returnString;
+	}
+	
+	public String toStringGraph() {
 		String returnString = "";	
 		for (int index = 0; index < nodeNum; index++) {
 			Bag currentBag = contestGrapgh.adj[index];
@@ -313,7 +369,9 @@ public class CompetitionDijkstra {
 		String filename = "tinyEWD.txt"; 
 		int contestantSpeed = 75; 
 		CompetitionDijkstra dijkstra = new CompetitionDijkstra(filename,contestantSpeed,contestantSpeed,contestantSpeed); 
-		System.out.print( "Graph input\n"+ dijkstra.toString());
+		System.out.print( "Graph input\n"+ dijkstra.toStringGraph());
+		double[] test = dijkstra.Dijkstra(dijkstra.contestGrapgh,0); 
+		System.out.print( "Short path\n"+ dijkstra.toStringDistTo(test));
 	}
 }
 

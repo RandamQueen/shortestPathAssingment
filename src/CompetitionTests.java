@@ -29,7 +29,20 @@ public class CompetitionTests {
 		int contestantSpeed = 75; 
 		CompetitionDijkstra dijkstra = new CompetitionDijkstra(filename,contestantSpeed,contestantSpeed,contestantSpeed); 
     }
-
+    
+    @Test
+    public void testTimeRequiredforCompetitionr() throws IOException {
+    	String filename = "tinyEWD.txt"; 
+		int contestantSpeed = -75; 
+		int correctTestVal =-1; 
+		CompetitionDijkstra dijkstra = new CompetitionDijkstra(filename,contestantSpeed,contestantSpeed,contestantSpeed); 
+		int result =dijkstra.timeRequiredforCompetition(); 
+		assertEquals(correctTestVal, result );  // returns -1 if speeds outside out range are passed 
+		
+		contestantSpeed = 75; 
+		correctTestVal =-1; 
+		dijkstra = new CompetitionDijkstra(filename,contestantSpeed,contestantSpeed,contestantSpeed); 
+    }
     @Test
     public void testFWConstructor() throws IOException {
     	String filename = "tinyEWD.txt"; 
