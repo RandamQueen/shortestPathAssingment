@@ -59,9 +59,33 @@ public class CompetitionDijkstra {
 
 		fileLine = br.readLine();
 		while (fileLine != null) {
-			String startNodeText = fileLine.substring(0, 1);
-			String endNodeText = fileLine.substring(2, 3);
-			String weightText = fileLine.substring(4);
+			if( nodeNum > 100) {
+			if(fileLine.charAt(5) ==' ' ) // this means the second num is single digit 
+			{ 
+				String tempString = fileLine.substring(6);
+				fileLine =  fileLine.substring(0,4);
+				fileLine += tempString; 
+			}
+			else if(fileLine.charAt(4) ==' ' ) // this means the first num is double digit 
+			{ 
+				String tempString = fileLine.substring(5);
+				fileLine =  fileLine.substring(0,4);
+				fileLine += tempString; 
+			}
+			if(fileLine.charAt(1) ==' ' ) // this means the first num is single digit 
+			{ 
+				fileLine =  fileLine.substring(2);
+			}
+			else if(fileLine.charAt(0) ==' ' ) // this means the first num is double digit 
+			{ 
+				fileLine =  fileLine.substring(1);
+			}
+		}
+			
+			String[] strArray = fileLine.split(" ");
+			String startNodeText = strArray[0];
+			String endNodeText =  strArray[1];
+			String weightText =  strArray[2];
 
 			int startNode = Integer.parseInt(startNodeText);
 			int endNode = Integer.parseInt(endNodeText);
@@ -98,8 +122,6 @@ public class CompetitionDijkstra {
 			edgeTo[temp] = null; 
 		}
 		distTo[sourceNodeIndex] = 0; 
-		
-
 	}
 
 	public void relax(DirectedEdge testEdge) { 
@@ -127,18 +149,18 @@ public class CompetitionDijkstra {
 	}
 
 	public String toString() {
-		String returnString = "";
-
+		String returnString = "";	
 		for (int index = 0; index < nodeNum; index++) {
 			Bag currentBag = contestGrapgh.adj[index];
 			int bagIndex = 0;
 			DirectedEdge currentEdge = currentBag.get(bagIndex);
-			while (currentEdge != null) {
+			while (currentEdge != null) {	
 				String currentString = "";
 				currentString = currentEdge.from() + " ->" + currentEdge.to() + " " + currentEdge.weight + "\n";
 				returnString += currentString;
 				bagIndex++;
 				currentEdge = currentBag.get(bagIndex);
+				
 			}
 		}
 		return returnString;
@@ -187,6 +209,8 @@ public class CompetitionDijkstra {
 			if( size ==0 )
 			{ 
 				startNode = new edgeNode(newEdge,null ); 
+				size++;
+				return; 
 			}
 			DirectedEdge firstEdge = startNode.currentNode;
 			boolean nodeAdded = false; 
@@ -219,6 +243,7 @@ public class CompetitionDijkstra {
 				}
 			}
 			size++;
+			return;
 		}
 		
 		public DirectedEdge get(int index) {
@@ -282,4 +307,13 @@ public class CompetitionDijkstra {
 			return weight;
 		}
 	}
+	
+	public static void main(String[] args) throws IOException
+	{ 
+		String filename = "tinyEWD.txt"; 
+		int contestantSpeed = 75; 
+		CompetitionDijkstra dijkstra = new CompetitionDijkstra(filename,contestantSpeed,contestantSpeed,contestantSpeed); 
+		System.out.print( "Graph input\n"+ dijkstra.toString());
+	}
 }
+
