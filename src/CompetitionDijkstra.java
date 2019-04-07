@@ -136,7 +136,7 @@ public class CompetitionDijkstra {
 //					+ toStringDistTo(sourceDistList));
 			for (int temp = 0; temp < nodeNum; temp++) {
 				double distFromSource = sourceDistList[temp];
-				distBetweenNodeList[i][temp] = distFromSource;
+				distBetweenNodeList[temp][i] = distFromSource;
 			}
 		}
 		
@@ -177,7 +177,6 @@ public class CompetitionDijkstra {
 		return returnTimeInt; 
 	}
 	
-
 	public boolean checkSolutionsisPossible( double[][] distBetweenNodeList)
 	{ 
 		boolean solutionPossible = true; 
@@ -273,6 +272,7 @@ public class CompetitionDijkstra {
 		}
 	}
 
+	// functioned used to process data toStrings 
 	public String toStringDistTo(double[] distTo) {
 		DecimalFormat numberFormat = new DecimalFormat("#.########");
 		String returnString = "";
@@ -293,7 +293,7 @@ public class CompetitionDijkstra {
 			returnString +=  "Time in minutes to get to " + k + "\n";
 			for( int l= 0; l < nodeNum;l++ ) { 
 				String timeString = 
-						"	From Source Node " + l + ":	" + numberFormat.format(timeChart[l][k] ) + "\n"; 
+						"	From Source Node " + l + ":	" + numberFormat.format(timeChart[k][l] ) + "\n"; 
 				returnString+= timeString; 
 			}
 		}

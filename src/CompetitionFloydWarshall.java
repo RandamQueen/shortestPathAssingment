@@ -2,8 +2,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-
-
+import java.text.DecimalFormat;
 
 /*
  * A Contest to Meet (ACM) is a reality TV contest that sets three contestants at three random
@@ -23,152 +22,136 @@ import java.io.IOException;
  */
 
 public class CompetitionFloydWarshall {
-	int contestASpeed;
-	int contestBSpeed;
-	int contestCSpeed;
+	double contestASpeed;
+	double contestBSpeed;
+	double contestCSpeed;
 	int nodeNum;
-	int edgeNum;
-	EdgeWeightedDigrapgh contestGrapgh;
+	int edgeNum; 
+	public double[][] distanceTable; 
+	double inf = Double.POSITIVE_INFINITY;
+	
     /**
      * @param filename: A filename containing the details of the city road network
      * @param sA, sB, sC: speeds for 3 contestants
      * @throws IOException 
      */
     CompetitionFloydWarshall (String filename, int sA, int sB, int sC) throws IOException{
-    	contestASpeed = sA;
+    		contestASpeed = sA;
 		contestBSpeed = sB;
 		contestCSpeed = sC;
-
+		processTextFile(filename);
+	}
+  
+    public void processTextFile(String filename) throws IOException {
 		File file = new File(filename);
 		FileReader fr = new FileReader(file);
 		BufferedReader br = new BufferedReader(fr);
-
 		String fileLine = br.readLine();
+
 		nodeNum = Integer.parseInt(fileLine);
 		fileLine = br.readLine();
 		edgeNum = Integer.parseInt(fileLine);
-
-		contestGrapgh = new EdgeWeightedDigrapgh(nodeNum, edgeNum);
-
+		
+		distanceTable = new double[nodeNum][nodeNum]; 
+		
+		for( int i = 0; i <nodeNum; i++) // initialise toble to inf 
+		{ 
+			for( int j = 0; j <nodeNum; j++)
+			{ 
+				distanceTable[i][j] = inf; 
+			}
+		}
+		
+		for( int index = 0; index <nodeNum; index++) // sets [index][index] to zero 
+		{ 
+			distanceTable[index][index] = 0; 
+		}
+		
 		fileLine = br.readLine();
 		while (fileLine != null) {
-			String startNodeText = fileLine.substring(0, 1);
-			String endNodeText = fileLine.substring(2, 3);
-			String weightText = fileLine.substring(4);
+			if (nodeNum >= 100) {
+				if (fileLine.charAt(5) == ' ') // this means the second num is single digit
+				{
+					String tempString = fileLine.substring(6);
+					fileLine = fileLine.substring(0, 4);
+					fileLine += tempString;
+				} else if (fileLine.charAt(4) == ' ') // this means the first num is double digit
+				{
+					String tempString = fileLine.substring(5);
+					fileLine = fileLine.substring(0, 4);
+					fileLine += tempString;
+				}
+				if (fileLine.charAt(1) == ' ') // this means the first num is single digit
+				{
+					fileLine = fileLine.substring(2);
+				} else if (fileLine.charAt(0) == ' ') // this means the first num is double digit
+				{
+					fileLine = fileLine.substring(1);
+				}
+			}
+			else if (nodeNum >= 10) {
+				if (fileLine.charAt(3) == ' ') // this means the second num is single digit
+				{
+					String tempString = fileLine.substring(4);
+					fileLine = fileLine.substring(0, 2);
+					fileLine += tempString;
+				} 
+				if (fileLine.charAt(0) == ' ') // this means the first num is single digit
+				{
+					fileLine = fileLine.substring(1);
+				} 
+			}
+
+			String[] strArray = fileLine.split(" ");
+			String startNodeText = strArray[0];
+			String endNodeText = strArray[1];
+			String weightText = strArray[2];
 
 			int startNode = Integer.parseInt(startNodeText);
 			int endNode = Integer.parseInt(endNodeText);
 			double weight = Double.parseDouble(weightText);
 
-			DirectedEdge newEdge = new DirectedEdge(startNode, endNode, weight);
-			contestGrapgh.addEdge(newEdge);
+			distanceTable[startNode][endNode] = weight; 
 			fileLine = br.readLine();
 		}
 		br.close();
 	}
-    /**
-     * @return int: minimum minutes that will pass before the three contestants can meet
+    
+    /**@return int: minimum minutes that will pass before the three contestants can meet
      */
     public int timeRequiredforCompetition(){
-
-        //TO DO
-        return -1;
-    }
-
-
-	// Based on the files of similar name provided in the textbook 
-	private static class EdgeWeightedDigrapgh {
-		int nodeNum;
-		int edgeNum;
-		private Bag<DirectedEdge>[] adj;
-		private int[] indegree;
-
-		EdgeWeightedDigrapgh(int nodeNum, int edgeNum) {
-			this.nodeNum = nodeNum;
-			this.edgeNum = edgeNum;
-			this.indegree = new int[nodeNum];
-			adj = (Bag<DirectedEdge>[]) new Bag[nodeNum];
-			for (int index = 0; index < nodeNum; index++) {
-				adj[index] = new Bag<DirectedEdge>();
-			}
-		}
-
-		void addEdge(DirectedEdge newEdge) {
-			int from = newEdge.from();
-			int to = newEdge.to();
-			adj[from].add(newEdge);
-			indegree[to]++;
-		}
-
-	}
-
-	private static class Node<DirectedEdge> {
-		private DirectedEdge currentNode;
-		private Node<DirectedEdge> nextNode;
-	}
-
-	public static class Bag<DirectedEdge>  {
-		private Node<DirectedEdge> startNode; // beginning of bag
-		private int size; // number of elements in bag
-
-		public Bag() {
-			startNode = null;
-			size = 0;
-		}
-
-		public boolean isEmpty() {
-			return startNode == null;
-		}
-
-		public int size() {
-			return size;
-		}
-
-		public void add(DirectedEdge item) {
-			Node<DirectedEdge> oldfirst = startNode;
-			startNode = new Node<DirectedEdge>();
-			startNode.currentNode = item;
-			startNode.nextNode = oldfirst;
-			size++;
+    	int timeRequired = -1;
+		if (contestASpeed < 50 || contestASpeed > 100 || contestBSpeed < 50 || contestBSpeed > 100
+				|| contestCSpeed > 100 || contestCSpeed < 50) {
+			return timeRequired;
 		}
 		
-		public DirectedEdge get(int index) 
+        return timeRequired;
+    }
+
+    public String toStringDistanceChart( )
+	{ 
+		DecimalFormat numberFormat = new DecimalFormat("#.##");
+		String returnString = "";
+		for( int i =0; i < nodeNum; i++ )
 		{ 
-			int counter = 0; 
-			DirectedEdge returnItem = null; 
-			if ( index >= size )
-			{ 
-				return returnItem;  
+			returnString +=  "From source node " + i + "\n";
+			for( int j= 0; j < nodeNum;j++ ) { 
+				String timeString = 
+						"	To get to  " + j + ":	" + numberFormat.format(distanceTable[i][j] ) + "\n"; 
+				returnString+= timeString; 
 			}
-			Node<DirectedEdge> currentItem = startNode; 
-			while( counter != index) 
-			{ 
-				currentItem = currentItem.nextNode; 
-				counter++;  
-			}
-			returnItem = currentItem.currentNode; 		
-			return returnItem; 
 		}
+		return returnString; 
 	}
-
-	private static class DirectedEdge {
-		int startNode;
-		int endNode;
-		double weight;
-
-		DirectedEdge(int startNode, int endNode, double weight) {
-			this.startNode = startNode;
-			this.endNode = endNode;
-			this.weight = weight;
-		}
-
-		public int to() {
-			return endNode;
-		}
-
-		public int from() {
-			return startNode;
-		}
+	
+    
+	public static void main(String[] args) throws IOException {
+		String filename = "tinyEWD.txt";
+		CompetitionFloydWarshall floydWarshall = new CompetitionFloydWarshall(filename, 100, 100,100);
+		System.out.print(floydWarshall.toStringDistanceChart()); 
+				
+		//int timeTaken = floydWarshall.timeRequiredforCompetition();
+		//System.out.print( "Time Taken: " + timeTaken);
 	}
-
 }
