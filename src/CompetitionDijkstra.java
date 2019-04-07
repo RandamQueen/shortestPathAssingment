@@ -104,7 +104,7 @@ public class CompetitionDijkstra {
 			int startNode = Integer.parseInt(startNodeText);
 			int endNode = Integer.parseInt(endNodeText);
 			double weight = Double.parseDouble(weightText);
-
+			
 			DirectedEdge newEdge = new DirectedEdge(startNode, endNode, weight);
 			contestGrapgh.addEdge(newEdge);
 			fileLine = br.readLine();
@@ -132,8 +132,6 @@ public class CompetitionDijkstra {
 		
 		for (int i = 0; i < nodeNum; i++) {
 			double[] sourceDistList = Dijkstra(contestGrapgh, i);
-//			System.out.println("Shortest path for Source Node " + i + " in metres :\n"
-//					+ toStringDistTo(sourceDistList));
 			for (int temp = 0; temp < nodeNum; temp++) {
 				double distFromSource = sourceDistList[temp];
 				distBetweenNodeList[temp][i] = distFromSource;
@@ -144,6 +142,7 @@ public class CompetitionDijkstra {
 		{ 
 			return timeRequired; 
 		}
+		
 		double slowestContestSpeed =contestASpeed; 
 		if( contestBSpeed < slowestContestSpeed)
 		{ 

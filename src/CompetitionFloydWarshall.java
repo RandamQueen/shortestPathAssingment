@@ -110,6 +110,7 @@ public class CompetitionFloydWarshall {
 			int startNode = Integer.parseInt(startNodeText);
 			int endNode = Integer.parseInt(endNodeText);
 			double weight = Double.parseDouble(weightText);
+			weight = weight* 1000;
 
 			distanceTable[startNode][endNode] = weight; 
 			fileLine = br.readLine();
@@ -126,10 +127,94 @@ public class CompetitionFloydWarshall {
 			return timeRequired;
 		}
 		
+		distanceTable =floydWarshall( distanceTable); 
+		
+		if( !checkSolutionsisPossible(distanceTable ))
+		{ 
+			return timeRequired; 
+		}
+		
+		double slowestContestSpeed =contestASpeed; 
+		if( contestBSpeed < slowestContestSpeed)
+		{ 
+			slowestContestSpeed = contestBSpeed; 
+		}
+		if( contestCSpeed < slowestContestSpeed)
+		{ 
+			slowestContestSpeed = contestCSpeed; 
+		}
+		
+
+		double[][] slowestContestTimeChart = createTimeChart(distanceTable,slowestContestSpeed); 
+		timeRequired = getSlowestTime(slowestContestTimeChart ); 	
         return timeRequired;
     }
+    
+	public double[][] floydWarshall(double[][] dist) {
+		for (int k = 0; k < nodeNum; k++) {
+			for (int i = 0; i < nodeNum; i++) {
+				for (int j = 0; j < nodeNum; j++) {
+					if (dist[i][j] > dist[i][k] + dist[k][j]) {
+						dist[i][j] = dist[i][k] + dist[k][j];
+					}
+				}
+			}
+		}
+		return dist; 
+    }
+    
+    public double [][] createTimeChart(double[][] distBetweenNodeList, double contestSpeed  )
+	{ 
+		double[][] tempChart =distBetweenNodeList; 
+		double[][] timeChart = new double[nodeNum][nodeNum] ; 
+		for( int i =0; i < nodeNum; i++) 
+		{ 
+			for( int j =0; j < nodeNum; j++) 
+			{ 
+				timeChart[i][j] = tempChart[i][j] / contestSpeed; 
+			}
+		}
+		return timeChart; 
+	}
 
-    public String toStringDistanceChart( )
+	public int getSlowestTime (  double[][] slowestContestTimeChart)
+	{ 
+		double slowestTime = slowestContestTimeChart[0][0]; 
+		for( int i =0 ; i < nodeNum; i ++)
+		{ 
+			for( int j =0; j < nodeNum; j ++)
+			{ 
+				if(slowestContestTimeChart[i][j] > slowestTime  )
+				{ 
+					slowestTime = slowestContestTimeChart[i][j]; 
+				}
+			}
+		}
+		slowestTime++ ;
+		int returnTimeInt = (int)  slowestTime; 
+		return returnTimeInt; 
+	}
+    
+	
+	public boolean checkSolutionsisPossible( double[][] distList)
+	{ 
+		boolean solutionPossible = true; 
+		for( int i = 0; i <nodeNum; i++ )
+		{ 
+			for( int j =0; j < nodeNum; j++ )
+			{ 
+				if( distList[i][j]  == inf) 
+				{ 
+					solutionPossible = false; 
+					return solutionPossible; 
+				}
+			}
+		}
+		return solutionPossible; 
+	}
+    
+  
+	public String toStringDistanceChart(double[][] distList )
 	{ 
 		DecimalFormat numberFormat = new DecimalFormat("#.##");
 		String returnString = "";
@@ -138,20 +223,17 @@ public class CompetitionFloydWarshall {
 			returnString +=  "From source node " + i + "\n";
 			for( int j= 0; j < nodeNum;j++ ) { 
 				String timeString = 
-						"	To get to  " + j + ":	" + numberFormat.format(distanceTable[i][j] ) + "\n"; 
+						"	To get to  " + j + ":	" + numberFormat.format(distList[i][j] ) + "\n"; 
 				returnString+= timeString; 
 			}
 		}
 		return returnString; 
 	}
-	
-    
+   
 	public static void main(String[] args) throws IOException {
-		String filename = "tinyEWD.txt";
-		CompetitionFloydWarshall floydWarshall = new CompetitionFloydWarshall(filename, 100, 100,100);
-		System.out.print(floydWarshall.toStringDistanceChart()); 
-				
-		//int timeTaken = floydWarshall.timeRequiredforCompetition();
-		//System.out.print( "Time Taken: " + timeTaken);
+		String filename = "1000EWD.txt";
+		CompetitionFloydWarshall floydWarshall = new CompetitionFloydWarshall(filename, 50, 50,50);
+		int timeTaken = floydWarshall.timeRequiredforCompetition();
+		System.out.print( "Time Taken: " + timeTaken);
 	}
 }
