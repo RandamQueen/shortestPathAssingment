@@ -5,6 +5,10 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * @author Hannah Keating
+ *
+ */
 public class CompetitionTests {
 	String tinyEWDText = 
 		"0 ->2 0.26\n" + 

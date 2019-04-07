@@ -26,6 +26,11 @@ import java.util.ArrayList;
  * This class implements the competition using Dijkstra's algorithm
  */
 
+/**
+ * @author Hannah Keating
+ *
+ */
+
 public class CompetitionDijkstra {
 	double contestASpeed;
 	double contestBSpeed;
@@ -35,12 +40,13 @@ public class CompetitionDijkstra {
 	EdgeWeightedDigrapgh contestGrapgh;
 
 	/**
-	 * @param filename:A
-	 *            filename containing the details of the city road network
+	 * @param filename:
+	 *            A filename containing the details of the city road network
 	 * @param sA,
-	 *            sB, sC: speeds for 3 people
+	 *            sB, sC: speeds for 3 contestants
 	 * @throws IOException
 	 * 
+	 *             Purpose: Constructor
 	 */
 	CompetitionDijkstra(String filename, int sA, int sB, int sC) throws IOException {
 		contestASpeed = sA;
@@ -48,6 +54,15 @@ public class CompetitionDijkstra {
 		contestCSpeed = sC;
 		processTextFile(filename);
 	}
+
+	/**
+	 * @param filename:
+	 *            A filename containing the details of the city road network
+	 * @throws IOException
+	 * 
+	 *             Purpose: This function process the text files and creates the
+	 *             contestGraph and adds the edges to this graph.
+	 */
 
 	public void processTextFile(String filename) throws IOException {
 		File file = new File(filename);
@@ -59,7 +74,7 @@ public class CompetitionDijkstra {
 		fileLine = br.readLine();
 		edgeNum = Integer.parseInt(fileLine);
 
-		contestGrapgh = new EdgeWeightedDigrapgh(nodeNum, edgeNum);
+		contestGrapgh = new EdgeWeightedDigrapgh(nodeNum);
 
 		fileLine = br.readLine();
 		while (fileLine != null) {
@@ -82,18 +97,17 @@ public class CompetitionDijkstra {
 				{
 					fileLine = fileLine.substring(1);
 				}
-			}
-			else if (nodeNum >= 10) {
+			} else if (nodeNum >= 10) {
 				if (fileLine.charAt(3) == ' ') // this means the second num is single digit
 				{
 					String tempString = fileLine.substring(4);
 					fileLine = fileLine.substring(0, 2);
 					fileLine += tempString;
-				} 
+				}
 				if (fileLine.charAt(0) == ' ') // this means the first num is single digit
 				{
 					fileLine = fileLine.substring(1);
-				} 
+				}
 			}
 
 			String[] strArray = fileLine.split(" ");
@@ -104,7 +118,7 @@ public class CompetitionDijkstra {
 			int startNode = Integer.parseInt(startNodeText);
 			int endNode = Integer.parseInt(endNodeText);
 			double weight = Double.parseDouble(weightText);
-			
+
 			DirectedEdge newEdge = new DirectedEdge(startNode, endNode, weight);
 			contestGrapgh.addEdge(newEdge);
 			fileLine = br.readLine();
@@ -115,6 +129,8 @@ public class CompetitionDijkstra {
 	/**
 	 * @return int: minimum minutes that will pass before the three contestants can
 	 *         meet
+	 * 
+	 *         Purpose: Calculates minimum minutes.
 	 */
 	public int timeRequiredforCompetition() {
 		int timeRequired = -1;
@@ -122,91 +138,49 @@ public class CompetitionDijkstra {
 				|| contestCSpeed > 100 || contestCSpeed < 50) {
 			return timeRequired;
 		}
-		
-		double[][] distBetweenNodeList = new double[nodeNum][nodeNum];
+
+		double[][] nodeDistList = new double[nodeNum][nodeNum];
 		for (int x = 0; x < nodeNum; x++) {
-			for (int y = 0; y < nodeNum; y++) {
-				distBetweenNodeList[x][y] = -1;
+			for (int y = 0; y < nodeNum; y++) { // sets the values to -1
+				nodeDistList[x][y] = -1;
 			}
 		}
-		
-		for (int i = 0; i < nodeNum; i++) {
+
+		for (int i = 0; i < nodeNum; i++) { // gets shortest path for all elements in nodeDistLis
 			double[] sourceDistList = Dijkstra(contestGrapgh, i);
 			for (int temp = 0; temp < nodeNum; temp++) {
 				double distFromSource = sourceDistList[temp];
-				distBetweenNodeList[temp][i] = distFromSource;
+				nodeDistList[i][temp] = distFromSource;
 			}
 		}
-		
-		if( !checkSolutionsisPossible( distBetweenNodeList))
-		{ 
-			return timeRequired; 
+
+		if (!isSolutionPossible(nodeDistList)) {
+			return timeRequired;
 		}
-		
-		double slowestContestSpeed =contestASpeed; 
-		if( contestBSpeed < slowestContestSpeed)
-		{ 
-			slowestContestSpeed = contestBSpeed; 
+
+		double slowestContestSpeed = contestASpeed;
+		if (contestBSpeed < slowestContestSpeed) {
+			slowestContestSpeed = contestBSpeed;
 		}
-		if( contestCSpeed < slowestContestSpeed)
-		{ 
-			slowestContestSpeed = contestCSpeed; 
+		if (contestCSpeed < slowestContestSpeed) {
+			slowestContestSpeed = contestCSpeed;
 		}
-		
-		double [][] slowestContestTimeChart = createTimeChart(distBetweenNodeList,slowestContestSpeed); 
-		timeRequired = getSlowestTime(slowestContestTimeChart ); 
+
+		double[][] slowestTimeChart = createTimeChart(nodeDistList, slowestContestSpeed);
+		timeRequired = getSlowestTime(slowestTimeChart);
 		return timeRequired;
 	}
 
-	public int getSlowestTime (  double[][] slowestContestTimeChart)
-	{ 
-		double slowestTime = slowestContestTimeChart[0][0]; 
-		for( int i =0 ; i < nodeNum; i ++)
-		{ 
-			for( int j =0; j < nodeNum; j ++)
-			{ 
-				if(slowestContestTimeChart[i][j] > slowestTime  )
-				{ 
-					slowestTime = slowestContestTimeChart[i][j]; 
-				}
-			}
-		}
-		slowestTime++ ;
-		int returnTimeInt = (int)  slowestTime; 
-		return returnTimeInt; 
-	}
-	
-	public boolean checkSolutionsisPossible( double[][] distBetweenNodeList)
-	{ 
-		boolean solutionPossible = true; 
-		for( int i = 0; i <nodeNum; i++ )
-		{ 
-			for( int j =0; j < nodeNum; j++ )
-			{ 
-				if( distBetweenNodeList[i][j]  == -1) 
-				{ 
-					solutionPossible = false; 
-					return solutionPossible; 
-				}
-			}
-		}
-		return solutionPossible; 
-	}
-	
-	public double [][] createTimeChart(double[][] distBetweenNodeList, double contestSpeed  )
-	{ 
-		double[][] tempChart =distBetweenNodeList; 
-		double[][] timeChart = new double[nodeNum][nodeNum] ; 
-		for( int i =0; i < nodeNum; i++) 
-		{ 
-			for( int j =0; j < nodeNum; j++) 
-			{ 
-				timeChart[i][j] = tempChart[i][j] / contestSpeed; 
-			}
-		}
-		return timeChart; 
-	}
-	
+	/**
+	 * @param contestGrapgh:
+	 *            The EWG used to represent the city.
+	 * @param sourceNodeIndex:
+	 *            The index of the starting noe
+	 * @return A Doubel array of the distance from the start node to each other node
+	 * 
+	 *         Purpose: Calculates the distance between a given node and the other
+	 *         nodes in the graph.
+	 */
 	public double[] Dijkstra(EdgeWeightedDigrapgh contestGrapgh, int sourceNodeIndex) {
 		ArrayList<String> testOrder = new ArrayList<String>();
 		boolean[] marked = new boolean[nodeNum];
@@ -231,35 +205,59 @@ public class CompetitionDijkstra {
 				for (int temp = 0; temp < templist.size(); temp++) {
 					testOrder.add(templist.get(temp));
 				}
-				relaxChildNodes(sourceEdge, currentTestNode, distTo, edgeTo);
-
+				relaxEdge(sourceEdge, currentTestNode, distTo, edgeTo);
 				marked[currentTestNode] = true;
 			}
 			testOrder.remove(0);
 		}
-		for( int index =0; index < nodeNum; index++)// convert to metres 
-		{ 
-			distTo[index] = distTo[index] * 1000; 
+		for (int index = 0; index < nodeNum; index++)// convert to metres
+		{
+			distTo[index] = distTo[index] * 1000;
 		}
 		return distTo;
 	}
 
-	public ArrayList<String> getChildValues(Bag sourceEdge) {
+	/**
+	 * @param sourceEdge:
+	 *            The bag object that contains the edges in which the sort starts at
+	 *            a certain node
+	 * @return An ArrayList of Strings of the nodes that the source nodes has edges
+	 *         coming out of
+	 * 
+	 *         Purpose: Generates a list of nodes that are connected to the source
+	 *         edge. They are sorted by weighted. Using for priority
+	 */
+
+	public ArrayList<String> getChildValues(Bag sourceBag) {
 		ArrayList<String> returnStrings = new ArrayList<String>();
-		for (int index = 0; index < sourceEdge.size(); index++) {
-			DirectedEdge currentNode = sourceEdge.get(index);
+		for (int index = 0; index < sourceBag.size(); index++) {
+			DirectedEdge currentNode = sourceBag.get(index);
 			String childVetrice = Integer.toString(currentNode.to());
 			returnStrings.add(childVetrice);
 		}
 		return returnStrings;
 	}
 
-	public void relaxChildNodes(Bag sourceEdge, int currentTestNode, double[] distTo, DirectedEdge[] edgeTo) {
-		for (int index = 0; index < sourceEdge.size(); index++) {
-			DirectedEdge testEdge = sourceEdge.get(index);
+	/**
+	 * * @param sourceEdge: The bag object that contains the edges in which the sort
+	 * starts at a certain node
+	 * 
+	 * @param edgeIndex:
+	 *            The Index value of source node
+	 * @param distTo:
+	 *            A double array of the short distance from the source to all other
+	 *            nodes.
+	 * @param edgeTo:
+	 *            A DirectedEdge array, which records the previous node traveled to
+	 *            to get to the node at each index location Purpose: Relax the edge
+	 *            between source and the edge at the given index
+	 */
+	public void relaxEdge(Bag sourceBag, int sourceIndex, double[] distTo, DirectedEdge[] edgeTo) {
+		for (int index = 0; index < sourceBag.size(); index++) {
+			DirectedEdge testEdge = sourceBag.get(index);
 			int w = testEdge.to();
 			double currentWeight = distTo[w];
-			double newWeight = distTo[currentTestNode] + testEdge.weight;
+			double newWeight = distTo[sourceIndex] + testEdge.weight;
 
 			if (currentWeight == -1) {
 				distTo[w] = newWeight;
@@ -271,7 +269,89 @@ public class CompetitionDijkstra {
 		}
 	}
 
-	// functioned used to process data toStrings 
+	/**
+	 * * @param dist: A 2D double array of the distances in meters
+	 * 
+	 * @return A boolean that tells us if there is a possible path to each node from
+	 *         each node
+	 * 
+	 *         Purpose: Determines if it's possible that each node has a path to it
+	 *         from every other node in the graph. If so, returns true. If there's
+	 *         no path, return false.
+	 * 
+	 */
+	public boolean isSolutionPossible(double[][] dist) {
+		boolean solutionPossible = true;
+		for (int i = 0; i < nodeNum; i++) {
+			for (int j = 0; j < nodeNum; j++) {
+				if (dist[i][j] == -1) {
+					solutionPossible = false;
+					return solutionPossible;
+				}
+			}
+		}
+		return solutionPossible;
+	}
+
+	/**
+	 * @param dist:
+	 *            A 2D double array of the distances in meters
+	 * @param contestSpeed:
+	 *            The speed of the contests in meters a minute
+	 * @return A 2D double array of the time in minutes between nodes
+	 * 
+	 *         Purpose: Creates a chart of the time in minutes it takes to get to
+	 *         each node
+	 */
+	public double[][] createTimeChart(double[][] distBetweenNodeList, double contestSpeed) {
+		double[][] tempChart = distBetweenNodeList;
+		double[][] timeChart = new double[nodeNum][nodeNum];
+		for (int i = 0; i < nodeNum; i++) {
+			for (int j = 0; j < nodeNum; j++) {
+				timeChart[i][j] = tempChart[i][j] / contestSpeed;
+			}
+		}
+		return timeChart;
+	}
+
+	/**
+	 * @param slowestContestTimeChart:
+	 *            A 2D double array of the time it takes the slowest persons to walk
+	 *            to any node.
+	 * @return int of maximum time taken
+	 * 
+	 *         Purpose: Finds the largest period of time that the slowest person
+	 *         will to walk to any point in the city.
+	 */
+	public int getSlowestTime(double[][] slowestContestTimeChart) {
+		double slowestTime = slowestContestTimeChart[0][0];
+		for (int i = 0; i < nodeNum; i++) {
+			for (int j = 0; j < nodeNum; j++) {
+				if (slowestContestTimeChart[i][j] > slowestTime) {
+					slowestTime = slowestContestTimeChart[i][j];
+				}
+			}
+		}
+		slowestTime++;
+		int returnTimeInt = (int) slowestTime;
+		return returnTimeInt;
+	}
+
+	// functioned used to process data toStrings
+
+	/**
+	 * @param dist:
+	 *            A 2D array of the distances in meter from a source node to the
+	 *            other nodes
+	 * @return String: Detailing the distance betweena source node to the other
+	 *         nodes
+	 * 
+	 *         Purpose: Creates a printable verion of a array, that tell us the
+	 *         distance between a source node and the other nodes
+	 * 
+	 *         Used for testing
+	 */
+
 	public String toStringDistTo(double[] distTo) {
 		DecimalFormat numberFormat = new DecimalFormat("#.########");
 		String returnString = "";
@@ -283,22 +363,40 @@ public class CompetitionDijkstra {
 		return returnString;
 	}
 
-	public String toStringTimeChart( double[][] timeChart)
-	{ 
+	/**
+	 * @param timeChart:
+	 *            A 2D array of the time in minutes it takes to get from one node to
+	 *            another.
+	 * @return String: Detailing the time taken to get to node node from another
+	 * 
+	 *         Purpose: Creates a printable verion of the 2D array, that tell us the
+	 *         time taken o get to nodes.
+	 * 
+	 *         Used for testing
+	 */
+
+	public String toStringTimeChart(double[][] timeChart) {
 		DecimalFormat numberFormat = new DecimalFormat("#.##");
 		String returnString = "";
-		for( int k =0; k < nodeNum; k++ )
-		{ 
-			returnString +=  "Time in minutes to get to " + k + "\n";
-			for( int l= 0; l < nodeNum;l++ ) { 
-				String timeString = 
-						"	From Source Node " + l + ":	" + numberFormat.format(timeChart[k][l] ) + "\n"; 
-				returnString+= timeString; 
+		for (int k = 0; k < nodeNum; k++) {
+			returnString += "Time in minutes to get to " + k + "\n";
+			for (int l = 0; l < nodeNum; l++) {
+				String timeString = "	From Source Node " + l + ":	" + numberFormat.format(timeChart[k][l]) + "\n";
+				returnString += timeString;
 			}
 		}
-		return returnString; 
+		return returnString;
 	}
-	
+
+	/**
+	 * @return String: Detailing the graph
+	 * 
+	 *         Purpose: Creates a printable version of the graph, telling us the To,
+	 *         From and weight of edges
+	 * 
+	 *         Used for testing
+	 */
+
 	public String toStringGraph() {
 		String returnString = "";
 		for (int index = 0; index < nodeNum; index++) {
@@ -318,14 +416,12 @@ public class CompetitionDijkstra {
 	}
 
 	// Based on the files of similar name provided in the textbook
+	// As such I didn't go through comments, unless it was a function that I added.
 	private static class EdgeWeightedDigrapgh {
-		int nodeNum;
-		int edgeNum;
+
 		Bag[] adj;
 
-		EdgeWeightedDigrapgh(int nodeNum, int edgeNum) {
-			this.nodeNum = nodeNum;
-			this.edgeNum = edgeNum;
+		EdgeWeightedDigrapgh(int nodeNum) {
 			adj = new Bag[nodeNum];
 			for (int index = 0; index < nodeNum; index++) {
 				adj[index] = new Bag();
@@ -334,7 +430,6 @@ public class CompetitionDijkstra {
 
 		void addEdge(DirectedEdge newEdge) {
 			int from = newEdge.from();
-			int to = newEdge.to();
 			adj[from].add(newEdge);
 		}
 	}
@@ -449,12 +544,5 @@ public class CompetitionDijkstra {
 		public double getWeight() {
 			return weight;
 		}
-	}
-
-	public static void main(String[] args) throws IOException {
-		String filename = "tinyEWD.txt";
-		CompetitionDijkstra dijkstra = new CompetitionDijkstra(filename, 100, 100,100);
-		int timeTaken = dijkstra.timeRequiredforCompetition();
-		System.out.print( "Time Taken: " + timeTaken);
 	}
 }

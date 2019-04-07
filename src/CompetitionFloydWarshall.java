@@ -137,7 +137,7 @@ public class CompetitionFloydWarshall {
 	 * @return int: minimum minutes that will pass before the three contestants can
 	 *         meet
 	 * 
-	 *         Purpose: Calculatesminimum minutes.
+	 *         Purpose: Calculates minimum minutes.
 	 */
 
 	public int timeRequiredforCompetition() {
@@ -168,7 +168,9 @@ public class CompetitionFloydWarshall {
 
 	/**
 	 * @param dist:
-	 *            A 2D double array of the distances in meters Purpose: Calculates
+	 *            A 2D double array of the distances in meters
+	 *            
+	 *             Purpose: Calculates
 	 *            the Shortest distance from all nodes in the graph to each other.
 	 */
 	public double[][] floydWarshall(double[][] dist) {
@@ -259,6 +261,8 @@ public class CompetitionFloydWarshall {
 	 * 
 	 *         Purpose: Creates a printable verion of the 2D array, that tell us the
 	 *         distance between all sets of nodes in the array.
+	 *         
+	 *     	Used for testing 
 	 */
 	public String toStringDistanceChart(double[][] dist) {
 		DecimalFormat numberFormat = new DecimalFormat("#.##");
